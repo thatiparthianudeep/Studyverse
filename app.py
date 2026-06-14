@@ -174,6 +174,9 @@ def get_db():
 def init_db():
     db_adapter.init_db()
 
+# Run database initialization at startup so tables exist on live server
+init_db()
+
 
 # ── XP / level helpers ────────────────────────────────────────────────────────
 LEVEL_TITLES = {1:"Novice", 2:"Apprentice", 3:"Scholar",
@@ -418,6 +421,20 @@ Study Material:
     except Exception as e:
         print("Flashcard JSON parse error, falling back to local flashcard generator:", repr(e))
         return _local_fallback_flashcards(text, title)
+
+
+@app.before_request
+def check_user_exists():
+    if request.path.startswith('/static/'):
+        return
+    if "user_id" in session:
+        conn = get_db()
+        user = conn.execute("SELECT id FROM users WHERE id=?", (session["user_id"],)).fetchone()
+        conn.close()
+        if not user:
+            session.clear()
+            flash("Your session has expired. Please log in again.", "info")
+            return redirect(url_for("login"))
 
 
 # ── Auth routes ───────────────────────────────────────────────────────────────
@@ -743,7 +760,99 @@ def pretty_date(dt_str):
     except Exception:
         return dt_str
 
+@app.errorhandler(Exception)
+def handle_exception(e):
+    import traceback
+    tb = traceback.format_exc()
+    if request.path.startswith('/api/') or request.headers.get('Accept') == 'application/json':
+        return jsonify({"error": str(e), "traceback": tb}), 500
+    
+    return f"""
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Application Error - StudyVerse</title>
+        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+        <style>
+            body {{
+                background: radial-gradient(circle at 50% 50%, #1a1a2e 0%, #0f0f1b 100%);
+                color: #e2e8f0;
+                font-family: 'Plus Jakarta Sans', sans-serif;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 100vh;
+                margin: 0;
+                padding: 20px;
+                box-sizing: border-box;
+            }}
+            .error-container {{
+                background: rgba(30, 41, 59, 0.45);
+                backdrop-filter: blur(16px);
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 20px;
+                padding: 40px;
+                max-width: 800px;
+                width: 100%;
+                box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            }}
+            h1 {{
+                font-size: 2rem;
+                font-weight: 700;
+                color: #ff5555;
+                margin-top: 0;
+                margin-bottom: 10px;
+            }}
+            p {{
+                color: #94a3b8;
+                font-size: 1.1rem;
+                line-height: 1.6;
+                margin-bottom: 25px;
+            }}
+            .traceback-container {{
+                background: rgba(15, 23, 42, 0.6);
+                border: 1px solid rgba(255, 255, 255, 0.05);
+                border-radius: 12px;
+                padding: 20px;
+                overflow-x: auto;
+                font-family: 'Courier New', Courier, monospace;
+                font-size: 0.9rem;
+                color: #38bdf8;
+                max-height: 400px;
+                text-align: left;
+            }}
+            .btn {{
+                display: inline-block;
+                background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+                color: white;
+                text-decoration: none;
+                padding: 12px 24px;
+                border-radius: 10px;
+                font-weight: 600;
+                margin-top: 20px;
+                transition: transform 0.2s, box-shadow 0.2s;
+            }}
+            .btn:hover {{
+                transform: translateY(-2px);
+                box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="error-container">
+            <h1>Something Went Wrong 🚀</h1>
+            <p>An unexpected error occurred in the application. Below is the debug traceback to help you diagnose the issue:</p>
+            <div class="traceback-container">
+                <pre style="margin:0;">{tb}</pre>
+            </div>
+            <a href="/" class="btn">Return to Home</a>
+        </div>
+    </body>
+    </html>
+    """, 500
+
 
 if __name__ == "__main__":
-    init_db()
-    app.run(debug=True, port=5001)
+    app.run(debug=True, port=5001)
