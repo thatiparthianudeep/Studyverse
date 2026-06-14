@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaderboard - StudyVerse AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header class="navbar">
+        <div class="container nav-container">
+            <a href="/dashboard" class="navbar-brand">🌌 StudyVerse</a>
+            <nav class="nav-links">
+                <a href="/dashboard" class="btn btn-secondary btn-sm">Back to Dashboard</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="container fade-in leaderboard-container" style="margin-top: 2rem; margin-bottom: 4rem;">
+        
+        <!-- Header title -->
+        <div class="text-center mb-8">
+            <h1 class="gradient-text" style="font-size: 2.5rem;">Global Leaderboard</h1>
+            <p class="text-muted" style="font-size: 0.95rem;">Compete with students worldwide. Study files and take quizzes to earn XP and level up!</p>
+        </div>
+
+        {% if users %}
+            <!-- Podium for top 3 -->
+            <div class="podium">
+                
+                <!-- 2nd Place (Silver) -->
+                {% if users|length > 1 %}
+                    {% set user_2nd = users[1] %}
+                    <div class="podium-column silver">
+                        <div class="podium-user">
+                            <div class="podium-username" title="{{ user_2nd.username }}">{{ user_2nd.username }}</div>
+                            <div class="podium-xp">{{ user_2nd.xp }} XP</div>
+                        </div>
+                        <div class="podium-pedestal">2</div>
+                    </div>
+                {% endif %}
+
+                <!-- 1st Place (Gold) -->
+                {% if users|length > 0 %}
+                    {% set user_1st = users[0] %}
+                    <div class="podium-column gold">
+                        <div class="podium-user" style="transform: scale(1.1); margin-bottom: 1rem;">
+                            <span style="font-size: 1.5rem; display: block; margin-bottom: 0.2rem;">👑</span>
+                            <div class="podium-username" style="font-weight: 700;" title="{{ user_1st.username }}">{{ user_1st.username }}</div>
+                            <div class="podium-xp" style="font-size: 0.85rem;">{{ user_1st.xp }} XP</div>
+                        </div>
+                        <div class="podium-pedestal">1</div>
+                    </div>
+                {% endif %}
+
+                <!-- 3rd Place (Bronze) -->
+                {% if users|length > 2 %}
+                    {% set user_3rd = users[2] %}
+                    <div class="podium-column bronze">
+                        <div class="podium-user">
+                            <div class="podium-username" title="{{ user_3rd.username }}">{{ user_3rd.username }}</div>
+                            <div class="podium-xp">{{ user_3rd.xp }} XP</div>
+                        </div>
+                        <div class="podium-pedestal">3</div>
+                    </div>
+                {% endif %}
+
+            </div>
+
+            <!-- Leaderboard Rankings list -->
+            <div class="leaderboard-list">
+                {% for u in users %}
+                    {% set is_current = (u.id == current_user_id) %}
+                    
+                    <div class="leaderboard-row {% if is_current %}current-user{% endif %}">
+                        <!-- Rank -->
+                        <div class="leaderboard-rank">
+                            #{{ loop.index }}
+                        </div>
+                        
+                        <!-- Avatar -->
+                        <div class="leaderboard-row-avatar">
+                            {{ u.username[0]|upper }}
+                        </div>
+
+                        <!-- Username and Level Title -->
+                        <div class="leaderboard-row-username">
+                            {{ u.username }} 
+                            {% if is_current %}
+                                <span style="font-size: 0.75rem; background: var(--primary); padding: 1px 6px; border-radius: 4px; margin-left: 0.5rem; color: #fff;">YOU</span>
+                            {% endif %}
+                        </div>
+
+                        <!-- Level -->
+                        <div class="leaderboard-row-level">
+                            Level {{ u.level }} ({{ level_title(u.level) }})
+                        </div>
+
+                        <!-- XP -->
+                        <div class="leaderboard-row-xp">
+                            {{ u.xp }} <span style="font-size: 0.75rem; font-weight: 500; color: var(--text-muted);">XP</span>
+                        </div>
+                    </div>
+
+                {% endfor %}
+            </div>
+            
+        {% else %}
+            <div class="glass-card text-center" style="padding: 4rem 2rem;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">👥</div>
+                <h3>No Users Found</h3>
+                <p class="text-muted mb-8" style="max-width: 450px; margin: 0.5rem auto 1.5rem;">Join and register an account to become the first top student!</p>
+                <a href="/register" class="btn btn-primary">Create Account</a>
+            </div>
+        {% endif %}
+
+    </main>
+
+    <footer style="padding: 2rem 0; border-top: 1px solid var(--card-border); text-align: center; margin-top: auto;" class="text-muted">
+        <div class="container">
+            <p>&copy; 2026 StudyVerse AI. Rankings board.</p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

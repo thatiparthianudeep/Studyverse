@@ -1,0 +1,29 @@
+# Environment variables (contains private Gemini API keys)
+.env
+.env.local
+.env.*
+
+# Python Cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Local Database
+*.db
+database.db
+
+# User uploads & AI cache directories
+uploads/*
+!uploads/.gitkeep
+quizzes/*
+summaries/*
+
+# Test Files
+test_study.pdf
+
+# IDE/OS files
+.vscode/
+.idea/
+Thumbs.db
+Desktop.ini

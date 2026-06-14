@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Material - StudyVerse AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header class="navbar">
+        <div class="container nav-container">
+            <a href="/dashboard" class="navbar-brand">🌌 StudyVerse</a>
+            <nav class="nav-links">
+                <a href="/dashboard" class="btn btn-secondary btn-sm">Dashboard</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="container auth-wrapper">
+        <div class="glass-card fade-in" style="width: 100%; max-width: 550px;">
+            <h2 class="mb-4 gradient-text text-center">Upload Study Material</h2>
+            <p class="text-muted text-center mb-8" style="font-size: 0.95rem;">Upload a PDF file (lecture notes, article, or slide decks) to generate your study suite.</p>
+
+            <!-- Flash messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-container">
+                        {% for category, message in messages %}
+                            <div class="flash-msg flash-{{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <form id="uploadForm" method="POST" enctype="multipart/form-data">
+                
+                <div class="form-group">
+                    <label for="title">Document Title (Optional)</label>
+                    <input 
+                        type="text" 
+                        id="title" 
+                        name="title" 
+                        placeholder="e.g. Midterm Physics Revision" 
+                        class="form-input"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label>Select PDF Document</label>
+                    <div class="upload-zone">
+                        <div class="upload-icon">📤</div>
+                        <h3>Drag & drop your PDF file here</h3>
+                        <p class="text-muted" style="font-size: 0.85rem; margin-top: 0.25rem;">or click to browse local files</p>
+                        
+                        <div id="fileIndicator" class="file-indicator"></div>
+
+                        <input 
+                            type="file" 
+                            id="pdfFileInput"
+                            name="pdf" 
+                            accept=".pdf" 
+                            class="file-input-hidden"
+                            required
+                        >
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                    <a href="/dashboard" class="btn btn-secondary" style="flex-grow: 1;">Cancel</a>
+                    <button type="submit" class="btn btn-primary" style="flex-grow: 2;">
+                        Upload & Analyze
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </main>
+
+    <!-- AI processing overlay screen -->
+    <div id="processingOverlay" class="processing-overlay">
+        <div class="spinner"></div>
+        <h2 class="gradient-text">AI is Studying Your Material...</h2>
+        <p class="text-muted" style="max-width: 450px;">
+            Our Gemini AI model is currently extracting text, outlining key concepts, writing exam tips, and generating custom interactive quizzes and flashcards. This may take 5-15 seconds. Please do not close this window.
+        </p>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - StudyVerse AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <header class="navbar">
+        <div class="container nav-container">
+            <a href="/" class="navbar-brand">🌌 StudyVerse</a>
+            <nav class="nav-links">
+                <a href="/login" class="btn btn-secondary btn-sm">Login Instead</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container auth-wrapper">
+        <div class="glass-card auth-card fade-in">
+            <h2 class="text-center mb-4 gradient-text">Create Account</h2>
+            <p class="text-center text-muted mb-8" style="font-size: 0.9rem;">Join StudyVerse AI and start gamifying your study flow.</p>
+
+            <!-- Flash messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-container">
+                        {% for category, message in messages %}
+                            <div class="flash-msg flash-{{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input 
+                        type="text" 
+                        id="username" 
+                        name="username" 
+                        placeholder="e.g. scholar123" 
+                        class="form-input" 
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        name="email" 
+                        placeholder="e.g. scholar@university.edu" 
+                        class="form-input" 
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        name="password" 
+                        placeholder="•••••••• (Min. 6 characters)" 
+                        class="form-input" 
+                        required
+                    >
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+                    Sign Up
+                </button>
+            </form>
+
+            <div class="text-center mt-4" style="font-size: 0.9rem;">
+                <span class="text-muted">Already have an account?</span> 
+                <a href="/login">Sign in here</a>
+            </div>
+        </div>
+    </main>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

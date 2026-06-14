@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flashcards - {{ doc.title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header class="navbar">
+        <div class="container nav-container">
+            <a href="/dashboard" class="navbar-brand">🌌 StudyVerse</a>
+            <nav class="nav-links">
+                <a href="/study/{{ doc.id }}" class="btn btn-secondary btn-sm">&larr; Study Hub</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="container fade-in" style="margin-top: 2rem; margin-bottom: 4rem;">
+        
+        <!-- Header Info -->
+        <div class="mb-4 text-center">
+            <a href="/study/{{ doc.id }}" style="font-size: 0.9rem; font-weight: 500;">&larr; Back to Study Hub</a>
+            <h1 style="font-size: 2.2rem; margin-top: 0.5rem;">Study Flashcards</h1>
+            <p class="text-muted" style="font-size: 0.9rem;">
+                Material: <strong>{{ doc.title }}</strong>
+            </p>
+        </div>
+
+        {% if cards %}
+            <!-- Flashcards Play Area -->
+            <div class="flashcards-container">
+                
+                <!-- Deck of Cards -->
+                <div id="flashcardActiveContainer" style="width: 100%; display: flex; justify-content: center;">
+                    {% for card in cards %}
+                        <!-- 3D Card wrapper -->
+                        <div class="flashcard-perspective" data-card-index="{{ loop.index0 }}" style="display: none;">
+                            <div class="flashcard-inner">
+                                
+                                <!-- Card Front: Term -->
+                                <div class="flashcard-face flashcard-front">
+                                    <div class="text-muted" style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1.5rem;">Concept / Term</div>
+                                    <h2 style="font-size: 1.8rem; font-weight: 700; word-break: break-word;">{{ card.front }}</h2>
+                                </div>
+                                
+                                <!-- Card Back: Definition -->
+                                <div class="flashcard-face flashcard-back">
+                                    <div class="text-muted" style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1.5rem; color: var(--primary-light);">Explanation / Definition</div>
+                                    <h3>{{ card.back }}</h3>
+                                </div>
+
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Controls row -->
+                <div class="flashcard-controls">
+                    <button type="button" id="cardPrevBtn" class="btn btn-secondary btn-sm" style="padding: 0.6rem 1.2rem;">
+                        &larr; Prev
+                    </button>
+                    <span id="cardIndexVal" class="card-index-info">1 / {{ cards|length }}</span>
+                    <button type="button" id="cardNextBtn" class="btn btn-secondary btn-sm" style="padding: 0.6rem 1.2rem;">
+                        Next &rarr;
+                    </button>
+                </div>
+
+                <!-- Shortcuts Help overlay -->
+                <div class="glass-card text-center" style="max-width: 450px; padding: 1rem 1.5rem; margin-top: 1.5rem; border-color: rgba(255,255,255,0.04); background: rgba(255,255,255,0.01);">
+                    <h4 style="margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--text-muted);">⌨️ Keyboard Shortcuts</h4>
+                    <div style="display: flex; gap: 1rem; justify-content: center; font-size: 0.8rem;" class="text-muted">
+                        <span><kbd style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2);">Space</kbd> Flip card</span>
+                        <span><kbd style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2);">&larr;</kbd> / <kbd style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2);">&rarr;</kbd> Navigate</span>
+                    </div>
+                </div>
+
+            </div>
+        {% else %}
+            <div class="glass-card text-center" style="padding: 4rem 2rem;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">⚠️</div>
+                <h3>Flashcards Empty</h3>
+                <p class="text-muted mb-8" style="max-width: 450px; margin: 0.5rem auto 1.5rem;">We couldn't generate flashcard definitions for this document. Ensure you have a valid Gemini API Key configured in your environment.</p>
+                <a href="/study/{{ doc.id }}" class="btn btn-primary">Return to Study Hub</a>
+            </div>
+        {% endif %}
+
+    </main>
+
+    <footer style="padding: 2rem 0; border-top: 1px solid var(--card-border); text-align: center; margin-top: auto;" class="text-muted">
+        <div class="container">
+            <p>&copy; 2026 StudyVerse AI. Flashcard deck.</p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

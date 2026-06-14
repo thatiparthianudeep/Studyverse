@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - StudyVerse AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header class="navbar">
+        <div class="container nav-container">
+            <a href="/dashboard" class="navbar-brand">🌌 StudyVerse</a>
+            <div class="nav-links">
+                <a href="/leaderboard">🏆 Leaderboard</a>
+                <div class="nav-user">
+                    <span class="level-badge">Lv. {{ user.level }} {{ level_title }}</span>
+                    <span style="font-weight: 600; color: var(--text-main);">{{ user.username }}</span>
+                </div>
+                <a href="/logout" class="btn btn-secondary btn-sm">Logout</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="container fade-in" style="margin-top: 2rem; margin-bottom: 4rem;">
+        
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-container">
+                    {% for category, message in messages %}
+                        <div class="flash-msg flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Welcome Banner -->
+        <div class="glass-card mb-8" style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(6, 182, 212, 0.05) 100%);">
+            <h1 class="gradient-text">Welcome back, {{ user.username }}!</h1>
+            <p class="text-muted" style="margin-top: 0.5rem; max-width: 600px;">Ready to learn something new? Select one of your materials below or upload a new PDF to get started.</p>
+        </div>
+
+        <div class="dashboard-grid">
+            
+            <!-- Left panel: Documents Grid -->
+            <div>
+                <div class="section-header">
+                    <h2>Your Study Library</h2>
+                    <a href="/upload" class="btn btn-primary">➕ Upload PDF</a>
+                </div>
+
+                {% if docs %}
+                    <div class="docs-grid">
+                        {% for doc in docs %}
+                            <div class="glass-card doc-card">
+                                <div>
+                                    <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">📄</div>
+                                    <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ doc.title }}">
+                                        {{ doc.title }}
+                                    </h3>
+                                </div>
+                                
+                                <div>
+                                    <div class="doc-meta">
+                                        <span>Pages: {{ doc.page_count }}</span>
+                                        <span>Uploaded: {{ doc.uploaded_at|pretty_date }}</span>
+                                    </div>
+                                    
+                                    <div class="doc-actions">
+                                        <a href="/study/{{ doc.id }}" class="btn btn-primary btn-sm" style="flex-grow: 1; margin-right: 0.5rem; justify-content: center;">
+                                            📖 Study Hub
+                                        </a>
+                                        <form action="/delete/{{ doc.id }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this study document? This cannot be undone.');">
+                                            <button type="submit" class="btn btn-danger btn-sm" title="Delete document">
+                                                🗑️
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="glass-card text-center" style="padding: 4rem 2rem;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">📚</div>
+                        <h3>Your Library is Empty</h3>
+                        <p class="text-muted mb-8" style="max-width: 400px; margin: 0.5rem auto 1.5rem;">Upload textbook chapters, articles, or lecture slides to generate study sheets, quizzes, and flashcards.</p>
+                        <a href="/upload" class="btn btn-primary">Upload Your First PDF</a>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Right panel: Profile Stats & Recent Activities -->
+            <div class="profile-panel">
+                
+                <!-- Level Progression Summary Card -->
+                <div class="glass-card">
+                    <div class="user-summary">
+                        <div class="user-avatar">
+                            {{ user.username[0]|upper }}
+                        </div>
+                        <div>
+                            <h3 style="margin-bottom: 0px;">{{ user.username }}</h3>
+                            <span class="text-muted" style="font-size: 0.9rem;">Level {{ user.level }} &bull; {{ level_title }}</span>
+                        </div>
+                    </div>
+
+                    <div class="xp-bar-container">
+                        <div class="xp-bar-labels">
+                            <span>XP: {{ user.xp }}</span>
+                            <span class="text-muted">Next level at {{ xp_next }} XP</span>
+                        </div>
+                        <div class="xp-bar-outer">
+                            <div class="xp-bar-inner" style="width: {{ xp_pct }}%;"></div>
+                        </div>
+                        <div class="text-center text-muted" style="font-size: 0.8rem; margin-top: 0.5rem;">
+                            {{ xp_pct }}% to Level Up
+                        </div>
+                    </div>
+
+                    <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.08); margin: 1.5rem 0;">
+
+                    <div class="stats-summary-grid">
+                        <div class="stat-item">
+                            <div class="text-muted" style="font-size: 0.8rem;">Quizzes taken</div>
+                            <div class="stat-value">{{ total_quizzes }}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="text-muted" style="font-size: 0.8rem;">Avg. Accuracy</div>
+                            <div class="stat-value">{{ avg_score }}%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity List -->
+                <div class="glass-card">
+                    <h3 class="mb-4" style="font-size: 1.2rem;">Recent Quiz Activity</h3>
+                    {% if recent %}
+                        <div class="recent-activity-list">
+                            {% for session in recent %}
+                                <div class="activity-item">
+                                    <div class="activity-title" title="{{ session.doc_title }}" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                        {{ session.doc_title }}
+                                    </div>
+                                    <div class="activity-meta">
+                                        <span>Score: <strong>{{ session.score }} / {{ session.total }}</strong></span>
+                                        <span class="activity-xp">+{{ session.xp_earned }} XP</span>
+                                    </div>
+                                    <div class="text-muted" style="font-size: 0.75rem; text-align: right;">
+                                        {{ session.taken_at|pretty_date }}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted" style="padding: 2rem 0;">
+                            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🎯</div>
+                            <p style="font-size: 0.9rem;">No quiz activity yet. Take a quiz to earn bonus XP!</p>
+                        </div>
+                    {% endif %}
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+
+    <footer style="padding: 2rem 0; border-top: 1px solid var(--card-border); text-align: center; margin-top: auto;" class="text-muted">
+        <div class="container">
+            <p>&copy; 2026 StudyVerse AI. Gamified Learning Platform.</p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
