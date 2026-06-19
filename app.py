@@ -175,7 +175,10 @@ def init_db():
     db_adapter.init_db()
 
 # Run database initialization at startup so tables exist on live server
-init_db()
+try:
+    init_db()
+except Exception as e:
+    print(f"Warning: Database initialization failed at startup: {repr(e)}")
 
 
 # ── XP / level helpers ────────────────────────────────────────────────────────
@@ -750,6 +753,35 @@ def delete_doc(doc_id):
         flash("Document deleted.", "success")
     conn.close()
     return redirect(url_for("dashboard"))
+
+
+@app.route("/debug")
+def debug_diagnostics():
+    import traceback
+    info = {
+        "status": "healthy",
+        "database_type": "PostgreSQL" if db_adapter.is_pg else "SQLite",
+        "database_url_configured": bool(DATABASE_URL),
+        "database_url_masked": re.sub(r'://([^:]+):([^@]+)@', r'://\1:****@', DATABASE_URL) if DATABASE_URL else "",
+        "gemini_api_key_configured": bool(GEMINI_API_KEY),
+        "secret_key_configured": bool(os.getenv("SECRET_KEY")),
+        "tables": [],
+        "connection_error": None
+    }
+    try:
+        conn = get_db()
+        if db_adapter.is_pg:
+            cur = conn.execute("SELECT table_name FROM information_schema.tables WHERE table_schema='public'")
+            info["tables"] = [row["table_name"] for row in cur.fetchall()]
+        else:
+            cur = conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
+            info["tables"] = [row[0] for row in cur.fetchall()]
+        conn.close()
+    except Exception as e:
+        info["status"] = "database_connection_failed"
+        info["connection_error"] = traceback.format_exc()
+        
+    return jsonify(info)
 
 
 # ── Jinja helpers ─────────────────────────────────────────────────────────────
