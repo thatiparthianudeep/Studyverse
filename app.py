@@ -776,8 +776,30 @@ def debug_diagnostics():
         "gemini_api_key_configured": bool(GEMINI_API_KEY),
         "secret_key_configured": bool(os.getenv("SECRET_KEY")),
         "tables": [],
-        "connection_error": None
+        "connection_error": None,
+        "fitz_status": "unknown",
+        "write_permission_status": "unknown"
     }
+    
+    # Test fitz
+    try:
+        import fitz
+        doc = fitz.open()
+        info["fitz_status"] = f"working (version {fitz.__version__})"
+        doc.close()
+    except Exception as e:
+        info["fitz_status"] = f"failed: {str(e)}"
+        
+    # Test write permissions
+    try:
+        test_path = os.path.join(app.config["UPLOAD_FOLDER"], "test_write.txt")
+        with open(test_path, "w") as f:
+            f.write("test")
+        os.remove(test_path)
+        info["write_permission_status"] = "working"
+    except Exception as e:
+        info["write_permission_status"] = f"failed: {str(e)}"
+
     try:
         conn = get_db()
         if db_adapter.is_pg:
