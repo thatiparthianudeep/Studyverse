@@ -352,22 +352,32 @@ def _gemini(prompt):
 
 def generate_summary(text, title="Document"):
     res = _gemini(f"""You are an expert study assistant.
-Analyse the following study material and provide a clear, structured response with these sections:
+Analyze the following study material in detail and generate a highly comprehensive, detailed study guide.
+Your output must be structured with the following sections:
 
-## Key Topics
-Bullet-point list of all major topics.
+# Study Guide: {title}
 
-## Important Concepts
-Each important concept explained in 2-3 sentences.
+## Executive Summary
+Provide a clear, high-level overview summarizing the core focus, context, and key themes of the material (150-250 words).
 
-## Detailed Summary
-A thorough summary of at least 400 words.
+## Key Topics & Themes
+Identify and list the main topics, themes, or modules covered in the material. Under each topic, provide a brief bullet-point summary explaining why it is significant.
 
-## Exam Tips
-Key points to remember, in bullet format.
+## In-Depth Analysis of Core Concepts
+For every major concept, theory, formula, process, or event introduced in the text:
+* **[Concept Name]**: Provide a comprehensive explanation (at least 3-4 sentences) including its context, how it operates, and any examples or applications mentioned.
+
+## Comprehensive Detailed Summary
+Provide an extensive, section-by-section (or chapter-by-chapter) summary. Do not generalize or gloss over details. Explain the core arguments, mechanisms, dates, names, steps, or technical nuances in depth. Make this section extremely detailed and thorough (aim for at least 800 - 1500 words to ensure complete coverage).
+
+## Exam Cheat Sheet & Key Facts
+* Provide a list of high-yield facts, rules, equations, formulas, dates, or definitions that are critical to remember for exams.
+
+## Critical Thinking & Practice Questions
+* Provide 5 open-ended review questions that test deep conceptual understanding, along with brief guidance on what a complete, high-scoring answer should include.
 
 Study Material:
-{text[:12000]}""")
+{text[:120000]}""")
     
     if not res:
         return _local_fallback_summary(text, title)
@@ -390,7 +400,7 @@ Format:
 ]
 
 Study Material:
-{text[:8000]}""")
+{text[:60000]}""")
     if not raw:
         return _local_fallback_quiz(text, title)
     try:
@@ -415,7 +425,7 @@ Format:
 ]
 
 Study Material:
-{text[:8000]}""")
+{text[:60000]}""")
     if not raw:
         return _local_fallback_flashcards(text, title)
     try:
